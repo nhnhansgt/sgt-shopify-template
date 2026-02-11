@@ -380,6 +380,38 @@ Detailed documentation for specific topics:
 
 ### Common Issues
 
+**Theme Extension - Schema Locale File Error:**
+```
+Extension must have only one default locale file.
+[locales/en.default.schema] Must have a valid locale file extension format.
+```
+
+**Cause:** Confusion between schema definition and translation strings.
+
+**Fix:**
+1. Move schema definition to `{% schema %}...{% endschema %}` in `.liquid` file
+2. Keep only translation strings in `locales/en.default.schema.json`
+3. Or delete `locales/en.default.schema.json` if English-only
+
+**Example:**
+```liquid
+{# blocks/my-block.liquid #}
+{% schema %}
+{
+  "name": "My Block",
+  "settings": [ /* settings here */ ]
+}
+{% endschema %}
+```
+
+```json
+{
+  "locales/en.default.schema.json": "Only translations here!"
+}
+```
+
+**See:** [extension_types.md](references/extension_types.md#3-theme-app-extensions) for detailed guide
+
 **Database errors:**
 ```bash
 # Regenerate Prisma client
@@ -410,6 +442,8 @@ npm run build
 ⚠️ **CRITICAL:** Always use `authenticate.admin()` or `authenticate.webhook()` for all routes
 
 ⚠️ **CRITICAL:** For extensions, always use `shopify.extension.toml` - NEVER use `extension.toml`
+
+⚠️ **CRITICAL:** For Theme App Extensions, schema definition goes in `{% schema %}...{% endschema %}` in `.liquid` files, NOT in `locales/en.default.schema.json`
 
 ✅ Use `<Link>` from `react-router` or `@shopify/polaris`, NOT `<a>` tags
 

@@ -69,26 +69,127 @@ target = "purchase.checkout.shipping-address.render-after"
 - Product badges
 - Custom sections
 - App embed blocks
+- Floating buttons/modals
 
 **Configuration:**
 ```toml
-type = "theme_extension"
-# No targeting - uses block definitions
+type = "theme_app_extension"
+name = "My Theme Extension"
+runtime_version = "unstable"
+api_version = "2025-01"
 
-[[extensions.settings.fields]]
-key = "display_text"
-name = "Display text"
-type = "text"
+# No targeting - uses block definitions in Liquid files
 ```
 
-**Block Structure:**
+**Directory Structure:**
 ```
-extensions/theme/product-banner/
-├── shopify.extension.toml
-├── src/
-│   └── Banner.jsx
-└── blocks/
-    └── banner.json
+extensions/my-theme-extension/
+├── shopify.extension.toml    # Extension config (CRITICAL: use this name!)
+├── blocks/
+│   └── my-block.liquid        # Block template with schema
+├── assets/
+│   └── script.js              # JavaScript files
+├── locales/
+│   └── en.default.schema.json # Translation strings (NOT schema definition!)
+└── snippets/
+    └── snippet.liquid         # Reusable Liquid snippets
+```
+
+**⚠️ CRITICAL: Schema Locale Files**
+
+**Common Error:**
+```
+Extension must have only one default locale file.
+[locales/en.default.schema] Must have a valid locale file extension format.
+```
+
+**Root Cause:**
+Confusion about what goes in schema locale files vs. schema definition.
+
+**File Locations:**
+
+| File | Purpose | Format |
+|------|---------|--------|
+| `blocks/*.liquid` | **Schema definition** with settings | JSON in `{% schema %}...{% endschema %}` |
+| `locales/en.default.schema.json` | **Translation strings** only | Key-value pairs: `{"key": "text"}` |
+
+**Correct Pattern:**
+
+1. **Schema Definition** goes in `.liquid` file:
+```liquid
+{% schema %}
+{
+  "name": "My Block",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome"
+    }
+  ]
+}
+{% endschema %}
+```
+
+2. **Translation Strings** (optional, for i18n):
+```json
+{
+  "my_block": "My Block",
+  "heading": "Heading",
+  "welcome": "Welcome"
+}
+```
+
+**Do NOT put schema definition in locale files!** This is a common mistake.
+
+**When to Use Schema Locale Files:**
+
+- ✅ Use when you want to support multiple languages
+- ✅ Use when you want to separate translations from schema
+- ❌ NOT required for English-only extensions
+- ❌ NOT a place for schema settings definition
+
+**Reference:** [Shopify Schema Locale Files Docs](https://shopify.dev/docs/storefronts/themes/architecture/locales/schema-locale-files)
+
+**Block Template Example:**
+```liquid
+{%- comment -%}
+  My Block - Theme App Extension
+{%- endcomment -%}
+
+{% style %}
+  .my-block {
+    padding: 20px;
+    background: {{ section.settings.background_color }};
+  }
+{% endstyle %}
+
+<div class="my-block">
+  <h2>{{ section.settings.heading }}</h2>
+</div>
+
+{% schema %}
+{
+  "name": "My Block",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}
 ```
 
 ### 4. POS UI Extensions

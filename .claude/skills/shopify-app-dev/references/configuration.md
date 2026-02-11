@@ -95,15 +95,43 @@ key = "offer_settings"
 
 **Theme App Extension:**
 ```toml
-type = "theme_extension"
-# No targeting - uses blocks instead
+type = "theme_app_extension"
+name = "My Theme Extension"
+description = "A custom theme extension"
+runtime_version = "unstable"
+api_version = "2025-01"
 
-[[extensions.settings.fields]]
-key = "banner_text"
-name = "Banner text"
-type = "text"
-required = true
+# No targeting - uses blocks in Liquid files instead
+# Schema is defined in blocks/*.liquid files, not here
 ```
+
+**⚠️ Theme App Extension Directory Structure:**
+```
+extensions/my-extension/
+├── shopify.extension.toml       # Use THIS name (not extension.toml)
+├── blocks/
+│   └── my-block.liquid           # Schema goes in {% schema %} here!
+├── assets/
+│   └── script.js
+├── locales/
+│   └── en.default.schema.json    # Translation strings ONLY
+└── snippets/
+    └── snippet.liquid
+```
+
+**⚠️ CRITICAL: Schema Definition Location:**
+
+- ✅ **Schema definition** → `{% schema %}...{% endschema %}` in `blocks/*.liquid`
+- ✅ **Translation strings** → `locales/en.default.schema.json` (optional)
+- ❌ **NEVER** put schema definition in locale files!
+
+**Common Error:**
+```
+Extension must have only one default locale file.
+Must have a valid locale file extension format.
+```
+
+**Fix:** Move schema from locale file to `.liquid` file. See [extension_types.md](extension_types.md#3-theme-app-extensions) for details.
 
 **POS UI Extension:**
 ```toml

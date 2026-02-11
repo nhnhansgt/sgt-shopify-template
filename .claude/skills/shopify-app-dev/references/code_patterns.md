@@ -116,31 +116,120 @@ export default function ShippingCalculator() {
 }
 ```
 
-### Theme App Extension
+### Theme App Extension (Liquid + JavaScript)
+
+**⚠️ Theme App Extensions use Liquid, NOT React components!**
+
+```liquid
+{# blocks/my-block.liquid #}
+{%- comment -%}
+  My Block - Theme App Extension
+  A custom block that adds dynamic content to themes
+{%- endcomment -%}
+
+{% style %}
+  :root {
+    --my-block-color: {{ section.settings.block_color }};
+    --my-block-size: {{ section.settings.block_size }}px;
+  }
+
+  .my-block {
+    padding: 20px;
+    background: var(--my-block-color);
+    font-size: var(--my-block-size);
+  }
+
+  .my-block__title {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+{% endstyle %}
+
+<div class="my-block">
+  <h2 class="my-block__title">{{ section.settings.title }}</h2>
+  <p>{{ section.settings.description }}</p>
+</div>
+
+<script src="{{ 'my-block.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "My Block",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "My Block"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Enter your description here"
+    },
+    {
+      "type": "color",
+      "id": "block_color",
+      "label": "Block Color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "range",
+      "id": "block_size",
+      "label": "Font Size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    }
+  ]
+}
+{% endschema %}
+```
 
 ```javascript
-// extensions/theme/product-rating/src/Rating.jsx
-import React from 'react';
-import { useMetafield } from '@shopify/app-extensions-react';
-import { StarRating, Text } from '@shopify/polaris';
+// assets/my-block.js
+(function() {
+  'use strict';
 
-export default function ProductRating() {
-  const { metafield, loading } = useMetafield({
-    namespace: 'demo',
-    key: 'avg_rating',
-    type: 'integer'
+  const block = document.querySelector('.my-block');
+  if (!block) return;
+
+  // Read settings from CSS custom properties
+  const styles = getComputedStyle(document.documentElement);
+  const blockSize = styles.getPropertyValue('--my-block-size').trim();
+
+  console.log('Block initialized with size:', blockSize);
+
+  // Add interactivity
+  block.addEventListener('click', function() {
+    console.log('Block clicked!');
   });
 
-  if (loading) return <Text>Loading...</Text>;
-
-  return (
-    <div>
-      <Text>Product Rating</Text>
-      <StarRating rating={metafield?.value || 0} />
-    </div>
-  );
-}
+})();
 ```
+
+**⚠️ CRITICAL: Schema Location**
+
+| File | Content |
+|------|---------|
+| `blocks/*.liquid` | ✅ Schema definition in `{% schema %}...{% endschema %}` |
+| `locales/en.default.schema.json` | ✅ Translation strings only (optional) |
+
+**Common Error:**
+```
+Extension must have only one default locale file.
+Must have a valid locale file extension format.
+```
+
+**Cause:** Putting schema definition in `locales/en.default.schema.json`
+
+**Fix:** Move schema to `{% schema %}...{% endschema %}` in `.liquid` file
+
+**See:** [extension_types.md](extension_types.md#3-theme-app-extensions) for detailed guide
 
 ### POS UI Extension
 
