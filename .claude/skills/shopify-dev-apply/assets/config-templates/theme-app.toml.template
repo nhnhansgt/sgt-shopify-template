@@ -1,0 +1,62 @@
+# Theme App Extension Configuration
+# Place this file as: extensions/your-extension/shopify.extension.toml
+#
+# CRITICAL: Theme app extensions have DIFFERENT structure than UI extensions
+# - NO [[extensions.targeting]] in TOML
+# - NO [extensions.capabilities]
+# - Target is defined in {% schema %} of block.liquid
+# - handle field is REQUIRED
+
+api_version = "unstable"
+
+[[extensions]]
+type = "theme_app_extension"
+name = "My Theme Extension"
+handle = "my-theme-extension"  # REQUIRED: lowercase, hyphens for spaces
+uid = "auto-generated-by-cli"
+
+# ============================================
+# THEME APP EXTENSION - MINIMAL CONFIG
+# ============================================
+# DO NOT ADD THESE - they cause errors:
+# [[extensions.targeting]]  ← WRONG for theme_app_extension!
+# [extensions.capabilities]  ← WRONG for theme_app_extension!
+#
+# Use api_version, NOT runtime_version
+
+# ============================================
+# BLOCK SCHEMA - Target goes HERE, not in TOML
+# ============================================
+# See: blocks/your-block.liquid
+
+{% schema %}
+{
+  "name": "My Block",
+  "target": "section",
+  "settings": [
+    { "type": "text", "id": "text", "label": "Text", "default": "Hello" }
+  ]
+  // NO "presets" in theme app extension blocks!
+}
+{% endschema %}
+
+# Available targets in schema:
+# - "section"     - App block (merchant adds in theme editor)
+# - "body"        - App embed (before </body>)
+# - "head"        - App embed (before </head>)
+# - "compliance_head" - App embed (loaded first, for cookie banners)
+
+# ============================================
+# COMMON ERRORS & FIXES
+# ============================================
+# Error: "Missing handle"
+# Fix: Add handle = "your-extension" (lowercase, hyphens only)
+#
+# Error: "Invalid locale extension"
+# Fix: Rename to en.default.schema.json (not .schema)
+#
+# Error: "unknown key 'presets'"
+# Fix: Remove "presets" from schema (only for theme sections)
+#
+# Error: "cannot contain 'stylesheet' tags"
+# Fix: Use {{ 'file.css' | asset_url | stylesheet_tag }} instead

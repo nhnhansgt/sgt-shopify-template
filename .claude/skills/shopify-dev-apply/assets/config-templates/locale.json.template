@@ -1,0 +1,5 @@
+{
+  "name": "My Extension",
+  "description": "Extension description shown to merchants",
+  "setting_key": "Setting Label"
+}

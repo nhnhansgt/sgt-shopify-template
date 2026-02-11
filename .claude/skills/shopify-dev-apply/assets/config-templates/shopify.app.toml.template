@@ -1,0 +1,54 @@
+# Shopify App Configuration
+# Place this file in project root as shopify.app.toml
+
+name = "My App"
+api_version = "2025-10"
+
+# ============================================
+# SCOPES - Request minimal permissions
+# ============================================
+# Common scopes: read_products, write_products, read_orders, write_orders,
+# read_customers, write_customers, read_inventory, write_inventory,
+# read_price_rules, write_price_rules, read_discounts, write_discounts
+scopes = "read_products,write_products,read_orders"
+
+# ============================================
+# WEBHOOKS
+# ============================================
+[[webhooks.subscriptions]]
+topic = "app/uninstalled"
+uri = "/webhooks/app/uninstalled"
+
+# Add more webhooks as needed
+# [[webhooks.subscriptions]]
+# topic = "orders/create"
+# uri = "/webhooks/orders/create"
+
+# [[webhooks.subscriptions]]
+# topic = "products/update"
+# uri = "/webhooks/products/update"
+
+# Optional: Webhook filters
+# [[webhooks.subscriptions]]
+# topic = "app/scopes_update"
+# uri = "/webhooks/app/scopes_update"
+
+# ============================================
+# ACCESS SCOPES (optional)
+# ============================================
+# [access_scopes]
+# scopes = "read_products,write_products"
+
+# ============================================
+# AUTH (optional)
+# ============================================
+# [auth]
+# redirect_urls = [
+#   "https://my-app.com/auth/callback"
+# ]
+
+# ============================================
+# POS (optional - for POS apps)
+# ============================================
+# [pos]
+# embedded = false

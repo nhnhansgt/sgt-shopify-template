@@ -1,0 +1,40 @@
+# POS UI Extension Configuration
+# Place this file as: extensions/your-extension/shopify.extension.toml
+
+api_version = "2025-10"
+
+[[extensions]]
+name = "My POS Extension"
+description = "Extension for Shopify POS"
+handle = "my-pos-extension"
+type = "ui_extension"
+uid = "auto-generated-by-cli"
+
+# ============================================
+# CAPABILITIES
+# ============================================
+[extensions.capabilities]
+api_access = true
+network_access = true
+block_progress = true
+
+# ============================================
+# TARGETING - Where extension renders
+# ============================================
+[[extensions.targeting]]
+module = "./src/Extension.jsx"
+
+# Common POS targets:
+# - pos.cart.block.render
+# - pos.cart.pre-progress-block.render
+# - pos.home.tile.render
+target = "pos.cart.block.render"
+
+# ============================================
+# SETTINGS (merchant-configurable)
+# ============================================
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "setting_key"
+type = "single_line_text_field"
+name = "Setting Name"
