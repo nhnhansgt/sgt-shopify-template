@@ -1,17 +1,17 @@
-# Shopify Configuration Files Reference
+# Configuration Files Reference
 
-## shopify.app.toml - Main App Configuration
+## shopify.app.toml - Main App Config
 
-Located at app root level. Contains app-level settings.
+Located at app root level.
 
 ### Required Fields
 
 ```toml
 name = "My App"                     # App display name
 handle = "my-app"                   # URL-friendly identifier
-client_id = "abc123"               # API key
-application_url = "https://..."    # App URL
-embedded = true                    # Run in Shopify admin
+client_id = "abc123"                # API key
+application_url = "https://..."     # App URL
+embedded = true                     # Run in Shopify admin
 ```
 
 ### Common Optional Fields
@@ -47,31 +47,31 @@ prefix = "apps"
 subpath = "my-proxy"
 ```
 
-## shopify.extension.toml - Extension Configuration
+## shopify.extension.toml - Extension Config
 
 Located **inside each extension directory**.
 
-⚠️ **CRITICAL**: Use `shopify.extension.toml` ONLY. Never use `extension.toml`.
+**CRITICAL:** Use `shopify.extension.toml` ONLY. Never use `extension.toml`.
 
 ### Basic Structure
 
 ```toml
-# === Basic Info ===
+# Basic Info
 name = "Shipping Calculator"
 description = "Calculate shipping rates"
 type = "ui_extension"
 
-# === Targeting (where extension appears) ===
+# Targeting (where extension appears)
 [[extensions.targeting]]
 target = "purchase.checkout.shipping-address.render-after"
 
-# === Capabilities ===
+# Capabilities
 [extensions.capabilities]
 api_access = true          # Can call Shopify API
 network_access = false     # Can call external APIs
 block_progress = false     # Can block checkout
 
-# === Settings (merchant config) ===
+# Settings (merchant config)
 [[extensions.settings.fields]]
 key = "enabled"
 name = "Enable feature"
@@ -79,51 +79,67 @@ type = "boolean"
 required = true
 ```
 
-### Extension Types & Examples
+### Extension Type Examples
 
 **Checkout UI Extension:**
 ```toml
 type = "ui_extension"
-
 [[extensions.targeting]]
 target = "purchase.checkout.header.render-before"
+```
 
-[[extensions.targeting.metafields]]
-namespace = "custom"
-key = "offer_settings"
+**Admin UI Extension:**
+```toml
+type = "ui_extension"
+[[extensions.targeting]]
+target = "admin.product-list.action-menu-item"
 ```
 
 **Theme App Extension:**
 ```toml
 type = "theme_app_extension"
 name = "My Theme Extension"
-description = "A custom theme extension"
 runtime_version = "unstable"
 api_version = "2025-01"
-
-# No targeting - uses blocks in Liquid files instead
-# Schema is defined in blocks/*.liquid files, not here
+# No targeting - uses blocks in Liquid files
 ```
 
-**⚠️ Theme App Extension Directory Structure:**
+**POS UI Extension:**
+```toml
+type = "pos_ui_extension"
+[[extensions.targeting]]
+target = "pos.cart.render-after"
+```
+
+**Customer Account Extension:**
+```toml
+type = "customer_account_ui_extension"
+[[extensions.targeting]]
+target = "customer-account.order-index.render-before"
+```
+
+## Theme App Extension - Special Notes
+
+**Directory Structure:**
 ```
 extensions/my-extension/
-├── shopify.extension.toml       # Use THIS name (not extension.toml)
+├── shopify.extension.toml       # Use THIS name!
 ├── blocks/
-│   └── my-block.liquid           # Schema goes in {% schema %} here!
+│   └── my-block.liquid          # Schema goes in {% schema %} here!
 ├── assets/
 │   └── script.js
 ├── locales/
-│   └── en.default.schema.json    # Translation strings ONLY
+│   └── en.default.schema.json   # Translation strings ONLY
 └── snippets/
     └── snippet.liquid
 ```
 
-**⚠️ CRITICAL: Schema Definition Location:**
+**Schema Location:**
 
-- ✅ **Schema definition** → `{% schema %}...{% endschema %}` in `blocks/*.liquid`
-- ✅ **Translation strings** → `locales/en.default.schema.json` (optional)
-- ❌ **NEVER** put schema definition in locale files!
+| File | Purpose |
+|------|---------|
+| `blocks/*.liquid` | **Schema definition** in `{% schema %}...{% endschema %}` |
+| `locales/en.default.schema.json` | **Translation strings** only (optional) |
 
 **Common Error:**
 ```
@@ -131,21 +147,11 @@ Extension must have only one default locale file.
 Must have a valid locale file extension format.
 ```
 
-**Fix:** Move schema from locale file to `.liquid` file. See [extension_types.md](extension_types.md#3-theme-app-extensions) for details.
+**Fix:** Move schema from locale file to `.liquid` file.
 
-**POS UI Extension:**
-```toml
-type = "pos_ui_extension"
+## shopify.web.toml - Web Process Config
 
-[[extensions.targeting]]
-target = "pos.cart.render-after"
-```
-
-## shopify.web.toml - Web Process Configuration
-
-Configures web app processes.
-
-### Single Process App
+### Single Process
 
 ```toml
 commands.dev = "npm run dev"
@@ -155,7 +161,7 @@ webhooks_path = "/api/webhooks"
 port = 3000
 ```
 
-### Multi-Process App
+### Multi-Process
 
 ```toml
 # Frontend (root)
@@ -167,16 +173,9 @@ port = 3000
 roles = ["backend"]
 commands.dev = "npm run dev:backend"
 port = 3001
-
-# Background worker (/worker directory)
-roles = ["background"]
-commands.dev = "npm run worker"
-port = 3002
 ```
 
 ## Environment-Specific Configs
-
-Override settings per environment:
 
 ```toml
 # shopify.app.local.toml (development)
@@ -188,15 +187,9 @@ dev_store_url = "https://dev-store.myshopify.com"
 [development]
 automatically_update_urls_on_dev = false
 dev_store_url = "https://staging.myshopify.com"
-
-# shopify.app.production.toml (production)
-[development]
-automatically_update_urls_on_dev = false
 ```
 
 ## Legacy File Migration
-
-**If you see these old files**, rename them:
 
 | Old Name (DO NOT USE) | New Name (USE THIS) |
 |------------------------|---------------------|
@@ -204,20 +197,14 @@ automatically_update_urls_on_dev = false
 | `shopify.theme.extension.toml` | `shopify.extension.toml` |
 | `extension.toml` | `shopify.extension.toml` |
 
-**Migration:**
-```bash
-cd extensions/checkout-ui/my-extension
-mv shopify.ui.extension.toml shopify.extension.toml
-```
+## Best Practices
 
-⚠️ After renaming, update file structure to match current format.
+1. Use environment files for sensitive data (never hardcode secrets)
+2. Request minimal scopes - only what you need
+3. Use specific webhook filters to reduce noise
+4. Keep configs in version control (except .env files)
+5. Test locally before deploying with `npm run dev`
 
-## Configuration Best Practices
-
-1. **Use environment files** for sensitive data (never hardcode secrets)
-2. **Request minimal scopes** - only what you need
-3. **Use specific webhook filters** to reduce noise
-4. **Keep configs in version control** (except .env files)
-5. **Test locally** before deploying with `npm run dev`
-
-See [extension_types.md](extension_types.md) for extension-specific configs.
+**See also:**
+- [extension_types.md](extension_types.md) - Extension-specific configs
+- [best_practices.md](best_practices.md) - Security and performance

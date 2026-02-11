@@ -3,49 +3,32 @@ name: shopify-app-dev
 description: Continue developing Shopify apps and extensions using this React Router v7 template. Covers adding routes, extensions, webhooks, database operations, and following Shopify development best practices.
 ---
 
-# Shopify App & Extension Development
+# Shopify App Development
 
-This skill provides guidance for continuing development on this Shopify app template using React Router v7, Polaris Web Components, and Prisma.
+Guidance for developing Shopify apps using React Router v7, Polaris Web Components, and Prisma.
 
-## When to Use This Skill
+## When to Use
 
-Use this skill when:
-- Adding new routes and pages to the app
+- Adding routes and pages to the app
 - Creating UI extensions (Admin, Checkout, POS, Theme, Customer Account)
-- Configuring `shopify.app.toml` for new scopes or webhooks
-- Working with Prisma database and handling sessions
+- Configuring `shopify.app.toml` for scopes or webhooks
+- Working with Prisma database and sessions
 - Implementing webhooks and GraphQL queries/mutations
-- Following Shopify development best practices and security guidelines
 - Preparing apps for Shopify App Store submission
 
-## Project Overview
+## Project Stack
 
-This is a **pre-configured Shopify App Template** that includes:
-- **Framework**: React Router v7 with TypeScript
-- **UI**: Polaris Web Components (Shopify's design system)
-- **Database**: Prisma ORM with SQLite (configurable)
-- **Authentication**: Shopify App Bridge with OAuth flow
-- **Project Structure**: Already scaffolded and ready for development
+- **Framework**: React Router v7 + TypeScript
+- **UI**: Polaris Web Components
+- **Database**: Prisma ORM + SQLite
+- **Auth**: Shopify App Bridge + OAuth
 
 ## Core Tasks
 
-### 1. Add New Route
+### Add New Route
 
-**Create a new route in the app:**
+Create file in `app/routes/` following flat routes convention:
 
-```bash
-# Navigate to app routes directory
-cd app/routes
-
-# Create a new route file following flat routes convention
-# Examples:
-# app._index.tsx → /app (authenticated index)
-# app.products.tsx → /app/products
-# app.orders.tsx → /app/orders
-# webhooks.orders.create.tsx → /webhooks/orders/create
-```
-
-**Route structure:**
 ```typescript
 // app/routes/app.new-page.tsx
 import { json, type LoaderFunctionArgs } from "react-router";
@@ -53,410 +36,117 @@ import { authenticate } from "~/app/shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
-  // Your data fetching logic here
-  return json({ data: "value" });
+  return json({ shop: session.shop });
 };
 
 export default function NewPage() {
-  return (
-    <s-page title="New Page">
-      {/* Your UI here */}
-    </s-page>
-  );
+  return <s-page title="New Page">{/* UI here */}</s-page>;
 }
 ```
 
-**See:** [code_patterns.md](references/code_patterns.md) for implementation examples
+**See:** [app_structure.md](references/app_structure.md) for routing patterns
 
-### 2. Add Extension
-
-**Generate new extension to existing app:**
+### Add Extension
 
 ```bash
-# Navigate to project root
-cd /path/to/app
-
-# Generate extension with CLI
 shopify app generate extension
-
-# Choose extension type when prompted:
-# - checkout_ui (Checkout UI Extension)
-# - admin_ui (Admin UI Extension)
-# - theme_app (Theme App Extension)
-# - pos_ui (POS UI Extension)
-# - customer_account (Customer Account UI Extension)
-# - function (Shopify Function)
+# Select: checkout_ui, admin_ui, theme_app, pos_ui, customer_account, or function
 ```
 
-**See:** [extension_types.md](references/extension_types.md) for detailed guide
+**See:** [extension_types.md](references/extension_types.md) for all extension types
 
-### 3. Update Database Schema
+### Add Webhook
 
-**Modify Prisma schema:**
-
-1. Edit `prisma/schema.prisma` to add/modify models
-2. Generate Prisma client:
-```bash
-npx prisma generate
-```
-
-3. Create and apply migration:
-```bash
-npx prisma migrate dev --name <migration-name>
-```
-
-4. Or reset database (development only):
-```bash
-npx prisma migrate reset --force
-```
-
-**See:** [app_structure.md](references/app_structure.md) for database patterns
-
-### 4. Configure App
-
-**Edit `shopify.app.toml` to add scopes or webhooks:**
-
+1. Add subscription in `shopify.app.toml`:
 ```toml
-name = "My App"
-api_version = "October25"
-
-# Add new scopes here
-scopes = "read_products,write_products,read_orders,write_orders"
-
 [[webhooks.subscriptions]]
 topic = "orders/create"
 uri = "/webhooks/orders/create"
-
-[[webhooks.subscriptions]]
-topic = "app/uninstalled"
-uri = "/webhooks/app/uninstalled"
 ```
 
-**See:** [configuration.md](references/configuration.md) for detailed options
-
-### 5. Implement Webhook
-
-**Create webhook handler:**
-
-1. Add webhook subscription in `shopify.app.toml`
-2. Create route file matching the URI pattern:
+2. Create handler route:
 ```typescript
 // app/routes/webhooks.orders.create.tsx
-import { authenticate } from "~/app/shopify.server";
-
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { shop, session, topic, payload } = await authenticate.webhook(request);
-  
-  // Process webhook payload
-  console.log(`Webhook ${topic} received from ${shop}`);
-  
+  const { shop, topic, payload } = await authenticate.webhook(request);
+  // Process webhook...
   return new Response();
 };
 ```
 
 **See:** [code_patterns.md](references/code_patterns.md) for webhook patterns
 
-### 6. Create Extension Component
-
-**Extension component structure:**
-
-```javascript
-// extensions/checkout-ui/my-extension/src/client.jsx
-import { extend } from '@shopify/checkout-ui-extensions-react';
-
-export default extend((api) => {
-  const { settings, i18n } = api;
-
-  return (
-    <Banner>
-      Configure settings in Shopify admin: {JSON.stringify(settings)}
-    </Banner>
-  );
-});
-```
-
-**See:** [extension_types.md](references/extension_types.md) for extension-specific patterns
-
-### 7. Build & Deploy
-
-**Build for production:**
-```bash
-npm run build
-npm run typecheck
-npm run lint
-```
-
-**Deploy to Shopify:**
-```bash
-npm run deploy
-# Or
-shopify app deploy
-```
-
-## Common Workflows
-
-### Add New Feature to App
-
-1. Create route: Add file to `app/routes/` following flat routes convention
-2. Implement loader/action: Use `authenticate.admin(request)` for auth
-3. Build UI: Use Polaris web components (`<s-page>`, `<s-button>`, etc.)
-4. Test locally: Run `npm run dev`
-5. Type check: Run `npm run typecheck`
-
-### Add Extension to App
-
-1. Generate extension: `shopify app generate extension`
-2. Configure: Edit `extensions/*/shopify.extension.toml`
-3. Implement component: Create extension UI in `src/` folder
-4. Test: Run `npm run dev` (press `p` to preview)
-5. Deploy: Run `npm run deploy`
-
-### Add Webhook Handler
-
-1. Update config: Add subscription in `shopify.app.toml`
-2. Create handler: Add route file matching webhook URI
-3. Authenticate: Use `authenticate.webhook(request)` in action
-4. Process data: Handle webhook payload as needed
-5. Test: Trigger event in Shopify Admin to verify
-
 ### Update Database
 
-1. Modify schema: Edit `prisma/schema.prisma`
-2. Generate client: Run `npx prisma generate`
-3. Create migration: Run `npx prisma migrate dev --name <description>`
-4. Test: Run `npm run dev`
-
-## Essential Patterns
-
-### Authentication
-
-```typescript
-// Always authenticate first in loaders/actions
-const { admin, session } = await authenticate.admin(request);
-
-// For webhooks
-const { shop, session, topic, payload } = await authenticate.webhook(request);
+```bash
+# Edit prisma/schema.prisma, then:
+npx prisma generate
+npx prisma migrate dev --name <description>
 ```
 
-### GraphQL Query
+**See:** [database_patterns.md](references/database_patterns.md) for Prisma operations
 
-```typescript
-// Use the admin context for GraphQL queries
-const response = await admin.graphql(`
-  query GetProducts($first: Int!) {
-    products(first: $first) {
-      nodes { id title }
-    }
-  }
-`, { variables: { first: 25 } });
+### Configure App
 
-const { data } = await response.json();
-```
+Edit `shopify.app.toml` for scopes, webhooks, and app settings.
 
-### Database Operations
-
-```typescript
-import prisma from "~/app/db.server";
-
-// Query
-const sessions = await prisma.session.findMany();
-
-// Create
-await prisma.session.create({
-  data: { shop: "test.myshopify.com", accessToken: "token" }
-});
-
-// Update
-await prisma.session.update({
-  where: { shop },
-  data: { accessToken: "new-token" }
-});
-```
+**See:** [configuration.md](references/configuration.md) for all options
 
 ## Development Commands
 
 ```bash
-# Start development server
-npm run dev
-
-# Type checking
-npm run typecheck
-
-# Linting
-npm run lint
-
-# GraphQL code generation
-npm run graphql-codegen
-
-# Build for production
-npm run build
-
-# Deploy to production
-npm run deploy
-
-# Database operations
-npx prisma studio              # Open database GUI
-npx prisma generate             # Generate Prisma client
-npx prisma migrate dev          # Create and apply migration
-npx prisma migrate reset        # Reset database (dev only)
+npm run dev          # Start dev server
+npm run build        # Build for production
+npm run typecheck    # Type checking
+npm run lint         # Linting
+npm run deploy       # Deploy to Shopify
+npx prisma studio    # Database GUI
 ```
-
-## Project Structure Reference
-
-```
-app/
-├── routes/              # File-based routing (flat routes)
-│   ├── app._index.tsx  # Main app homepage (authenticated)
-│   ├── app.tsx         # App layout wrapper
-│   ├── auth.$.tsx      # Auth flow wrapper
-│   └── webhooks.*.tsx  # Webhook handlers
-├── shopify.server.ts   # Shopify app configuration & auth
-├── db.server.ts        # Prisma client singleton
-├── entry.server.tsx    # Server entry point
-├── root.tsx            # Root HTML layout
-└── routes.ts           # Route configuration (flatRoutes)
-
-extensions/             # Shopify extensions
-prisma/
-├── schema.prisma       # Database schema
-└── dev.sqlite          # SQLite database (development)
-
-shopify.app.toml        # Shopify app configuration
-vite.config.ts          # Vite configuration
-```
-
-**See:** [app_structure.md](references/app_structure.md) for detailed structure
-
-## Resources
-
-### References
-
-Detailed documentation for specific topics:
-
-- **[app_structure.md](references/app_structure.md)** - Complete app structure and file organization
-- **[configuration.md](references/configuration.md)** - TOML configuration reference
-- **[extension_types.md](references/extension_types.md)** - All extension types and when to use each
-- **[best_practices.md](references/best_practices.md)** - Performance, security, and App Store guidelines
-- **[code_patterns.md](references/code_patterns.md)** - Authentication, GraphQL, webhooks, database patterns
-
-## Best Practices Quick Reference
-
-### Performance
-
-- Bundle size: <16KB JavaScript, <10KB entry point
-- Web Vitals: LCP ≤2.5s, CLS ≤0.1, INP ≤200ms
-- Use `defer`/`async` for scripts
-
-**See:** [best_practices.md](references/best_practices.md) for details
-
-### Security
-
-- Use `authenticate.admin()` for all authenticated requests
-- Never hardcode credentials
-- Use session tokens for embedded apps
-- Implement proper error handling
-
-**See:** [best_practices.md](references/best_practices.md) for details
-
-### Configuration
-
-- Always use `shopify.extension.toml` for extensions (NEVER `extension.toml`)
-- Request minimal scopes needed for your app
-- Use webhook filters to reduce noise
-- Keep configs in version control
-
-**See:** [configuration.md](references/configuration.md) for details
-
-### App Store
-
-- App name: Start with brand, ≤30 chars
-- Icon: 1200x1200px, bold colors
-- Screenshots: 3-6 at 1600x900px
-- Introduction: Focus on merchant benefits
-
-**See:** [best_practices.md](references/best_practices.md) for details
-
-## Troubleshooting
-
-### Common Issues
-
-**Theme Extension - Schema Locale File Error:**
-```
-Extension must have only one default locale file.
-[locales/en.default.schema] Must have a valid locale file extension format.
-```
-
-**Cause:** Confusion between schema definition and translation strings.
-
-**Fix:**
-1. Move schema definition to `{% schema %}...{% endschema %}` in `.liquid` file
-2. Keep only translation strings in `locales/en.default.schema.json`
-3. Or delete `locales/en.default.schema.json` if English-only
-
-**Example:**
-```liquid
-{# blocks/my-block.liquid #}
-{% schema %}
-{
-  "name": "My Block",
-  "settings": [ /* settings here */ ]
-}
-{% endschema %}
-```
-
-```json
-{
-  "locales/en.default.schema.json": "Only translations here!"
-}
-```
-
-**See:** [extension_types.md](references/extension_types.md#3-theme-app-extensions) for detailed guide
-
-**Database errors:**
-```bash
-# Regenerate Prisma client
-npx prisma generate
-
-# Create migration
-npx prisma migrate dev --name init
-```
-
-**Build errors:**
-```bash
-# Type check
-npm run typecheck
-
-# Lint
-npm run lint
-
-# Fix issues and rebuild
-npm run build
-```
-
-**Webhook testing:**
-- Test manually by triggering events in Shopify Admin
-- Use app-specific webhooks in TOML (not Admin-created)
 
 ## Key Reminders
 
-⚠️ **CRITICAL:** Always use `authenticate.admin()` or `authenticate.webhook()` for all routes
+**CRITICAL:**
+- Always use `authenticate.admin()` or `authenticate.webhook()` for all routes
+- For extensions, use `shopify.extension.toml` - NEVER `extension.toml`
+- Theme App Extensions: schema goes in `{% schema %}` in `.liquid` files, NOT in locale files
 
-⚠️ **CRITICAL:** For extensions, always use `shopify.extension.toml` - NEVER use `extension.toml`
+**Navigation:**
+- Use `<Link>` from `react-router` or `@shopify/polaris`, NOT `<a>` tags
+- Use `redirect` from `authenticate.admin`, NOT from `react-router`
 
-⚠️ **CRITICAL:** For Theme App Extensions, schema definition goes in `{% schema %}...{% endschema %}` in `.liquid` files, NOT in `locales/en.default.schema.json`
+## Troubleshooting
 
-✅ Use `<Link>` from `react-router` or `@shopify/polaris`, NOT `<a>` tags
+### Theme Extension Locale Error
 
-✅ Use `redirect` from `authenticate.admin`, NOT from `react-router`
+```
+Extension must have only one default locale file.
+Must have a valid locale file extension format.
+```
 
-✅ Reference `references/` files for detailed information
+**Fix:** Move schema to `{% schema %}` in `.liquid` file. Locale files are for translations only.
 
-✅ Follow [best practices](references/best_practices.md) for App Store approval
+### Database Errors
 
-## Additional Resources
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+```
 
-- **React Router docs**: https://reactrouter.com/home
-- **Shopify App docs**: https://shopify.dev/docs/api/shopify-app-react-router
-- **Polaris Web Components**: https://shopify.dev/docs/api/app-home/polaris-web-components
-- **Prisma docs**: https://www.prisma.io/docs
-- **GraphQL Admin API**: https://shopify.dev/docs/api/admin-graphql
+## References
+
+- [app_structure.md](references/app_structure.md) - Directory structure, routing patterns
+- [configuration.md](references/configuration.md) - TOML configuration options
+- [extension_types.md](references/extension_types.md) - All extension types and targets
+- [code_patterns.md](references/code_patterns.md) - Authentication, routes, webhooks
+- [graphql_patterns.md](references/graphql_patterns.md) - GraphQL queries and mutations
+- [database_patterns.md](references/database_patterns.md) - Prisma database operations
+- [extension_examples.md](references/extension_examples.md) - Extension code examples
+- [best_practices.md](references/best_practices.md) - Performance, security, App Store
+
+## External Resources
+
+- [React Router docs](https://reactrouter.com/home)
+- [Shopify App docs](https://shopify.dev/docs/api/shopify-app-react-router)
+- [Polaris Web Components](https://shopify.dev/docs/api/app-home/polaris-web-components)
+- [Prisma docs](https://www.prisma.io/docs)
+- [GraphQL Admin API](https://shopify.dev/docs/api/admin-graphql)

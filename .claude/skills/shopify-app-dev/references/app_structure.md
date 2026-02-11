@@ -1,41 +1,41 @@
-# Shopify App Structure Reference
+# App Structure Reference
 
-## Complete Directory Structure
+## Directory Structure
 
 ```
 my-shopify-app/
 ├── shopify.app.toml              # Main app config (REQUIRED)
 ├── shopify.app.local.toml        # Local environment config
-├── package.json                  # Dependencies and scripts
+├── package.json                  # Dependencies & scripts
 ├── app/
 │   ├── entry.server.tsx          # Server entry point
-│   ├── root.tsx                 # Root layout
-│   ├── routes/                  # File-based routing
-│   │   ├── app._index.tsx       # /app (authenticated index)
-│   │   ├── app.tsx              # /app (layout wrapper)
-│   │   ├── auth.$.tsx           # /auth/* (auth flow)
-│   │   ├── auth.login/          # Login pages
-│   │   └── webhooks.*.tsx       # Webhook handlers
-│   └── db.server.ts             # Prisma client singleton
-├── extensions/                   # App extensions (optional)
+│   ├── root.tsx                  # Root HTML layout
+│   ├── routes/                   # File-based routing
+│   │   ├── app._index.tsx        # /app (authenticated index)
+│   │   ├── app.tsx               # /app (layout wrapper)
+│   │   ├── auth.$.tsx            # /auth/* (auth flow)
+│   │   ├── auth.login/           # Login pages
+│   │   └── webhooks.*.tsx        # Webhook handlers
+│   ├── shopify.server.ts         # Shopify auth & config
+│   ├── db.server.ts              # Prisma client singleton
+│   └── routes.ts                 # Route config (flatRoutes)
+├── extensions/                   # App extensions
 │   └── {extension-type}/
 │       └── {extension-name}/
-│           ├── shopify.extension.toml  # Extension config
+│           ├── shopify.extension.toml
 │           ├── src/
-│           │   ├── index.ts
-│           │   └── client.jsx
 │           └── package.json
 ├── prisma/
-│   ├── schema.prisma            # Database schema
-│   └── dev.sqlite               # SQLite database (dev)
-└── env                          # Environment variables (UUIDs)
+│   ├── schema.prisma             # Database schema
+│   └── dev.sqlite                # SQLite database (dev)
+└── public/                       # Static assets
 ```
 
-## Key Files Explained
+## Key Files
 
 ### shopify.app.toml (REQUIRED)
 
-Main app configuration at root level.
+Main app configuration.
 
 ```toml
 name = "My App"
@@ -51,23 +51,21 @@ topic = "app/uninstalled"
 uri = "/webhooks/app/uninstalled"
 ```
 
-### app/routes/ - File-Based Routing
+### File-Based Routing (app/routes/)
 
 Flat routes convention (React Router v7):
 
-```
-app._index.tsx              → /app
-app.products.tsx            → /app/products
-app.products.$id.tsx        → /app/products/:id
-auth.$.tsx                  → /auth/*
-webhooks.orders.create.tsx → /webhooks/orders/create
-```
+| File | Route |
+|------|-------|
+| `app._index.tsx` | `/app` |
+| `app.products.tsx` | `/app/products` |
+| `app.products.$id.tsx` | `/app/products/:id` |
+| `auth.$.tsx` | `/auth/*` |
+| `webhooks.orders.create.tsx` | `/webhooks/orders/create` |
 
-### extensions/ - Extension Directory
+### Extension Directory
 
-Each extension has its own subdirectory with shopify.extension.toml.
-
-⚠️ **IMPORTANT**: Always use `shopify.extension.toml` (NOT `extension.toml`)
+**CRITICAL:** Always use `shopify.extension.toml` (NEVER `extension.toml`)
 
 ```
 extensions/
@@ -94,7 +92,7 @@ model Session {
 }
 ```
 
-## Routing Patterns
+## Route Patterns
 
 ### Authenticated Routes
 
@@ -123,43 +121,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 ```
 
-## Common Patterns
-
-### GraphQL Queries
-
-```typescript
-const response = await admin.graphql(`
-  query GetProducts($first: Int!) {
-    products(first: $first) {
-      nodes { id title }
-    }
-  }
-`, { variables: { first: 25 } });
-
-const { data } = await response.json();
-```
-
-### Database Operations
-
-```typescript
-import prisma from "~/app/db.server";
-
-// Query
-const sessions = await prisma.session.findMany();
-
-// Create
-await prisma.session.create({
-  data: { shop: "test.myshopify.com", accessToken: "token" }
-});
-
-// Update
-await prisma.session.update({
-  where: { shop },
-  data: { accessToken: "new_token" }
-});
-
-// Delete
-await prisma.session.delete({ where: { shop } });
-```
-
-See main SKILL.md file for common workflows and [configuration.md](configuration.md) for detailed config options.
+**See also:**
+- [configuration.md](configuration.md) - Detailed config options
+- [code_patterns.md](code_patterns.md) - Implementation patterns

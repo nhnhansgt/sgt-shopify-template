@@ -1,4 +1,4 @@
-# Shopify App Development Best Practices
+# Best Practices Guide
 
 ## Performance Requirements
 
@@ -12,11 +12,11 @@
 
 ### Web Vitals (Built for Shopify)
 
-| Metric | Threshold | Impact |
-|--------|-----------|--------|
-| LCP (Largest Contentful Paint) | ≤2.5s | Good user experience |
-| CLS (Cumulative Layout Shift) | ≤0.1 | Visual stability |
-| INP (Interaction to Next Paint) | ≤200ms | Responsiveness |
+| Metric | Threshold |
+|--------|-----------|
+| LCP (Largest Contentful Paint) | ≤2.5s |
+| CLS (Cumulative Layout Shift) | ≤0.1 |
+| INP (Interaction to Next Paint) | ≤200ms |
 
 ### Loading Performance
 
@@ -25,7 +25,7 @@
 <script defer src="main.js"></script>
 <script async src="analytics.js"></script>
 
-<!-- Viewport meta tag (prevents double rendering) -->
+<!-- Viewport meta tag -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 ```
 
@@ -43,7 +43,7 @@
 
 ```typescript
 // ❌ BAD - Hardcoded secrets
-const apiKey = "shpat_xxxxx";  // NEVER DO THIS
+const apiKey = "shpat_xxxxx";
 
 // ✅ GOOD - Environment variables
 const apiKey = process.env.SHOPIFY_API_KEY;
@@ -64,8 +64,7 @@ const response = await admin.graphql(`...`);
 ### App Listing
 
 **App Name:**
-- Start with brand name
-- ≤30 characters
+- Start with brand name, ≤30 characters
 - ❌ Bad: "Announcement Bar - QTeck"
 - ✅ Good: "QTeck - Announcement Bar"
 
@@ -75,8 +74,7 @@ const response = await admin.graphql(`...`);
 - JPEG or PNG
 
 **Screenshots:**
-- 3-6 desktop screenshots
-- 1600x900px
+- 3-6 desktop screenshots at 1600x900px
 - Include mobile/POS if applicable
 
 ### Content Guidelines
@@ -90,12 +88,11 @@ const response = await admin.graphql(`...`);
 - Scannable format
 - Focus on benefits, not features
 
-### Pricing & Plans
+### Pricing
 
 - Free trials: 14 days recommended
 - Allow plan switching without reinstall
 - Enterprise plans: Reference in "Description of additional charges"
-- Inform about multiple payments if applicable
 
 ## Design Guidelines
 
@@ -115,7 +112,7 @@ const response = await admin.graphql(`...`);
   <s-app-nav-item url="/app/settings">Settings</s-app-nav-item>
 </s-app-nav>
 
-// Cards (most content)
+// Cards
 <s-card>
   <s-text-field name="field" label="Field"></s-text-field>
 </s-card>
@@ -125,31 +122,26 @@ const response = await admin.graphql(`...`);
 <s-button variant="secondary">Cancel</s-button>
 ```
 
-### Mobile Responsiveness
-
-- No horizontal scrolling on mobile
-- Stack columns on smaller screens
-- Expandable content with clear mechanisms
-- Touch-friendly interactive elements
-
 ## Webhook Best Practices
 
-### Delivery Reliability
+### Idempotent Processing
 
 ```javascript
-// Build idempotent processing
-const processedWebhooks = new Set();
-
 async function handleWebhook(webhook) {
   const webhookId = webhook.id;
 
-  // Skip if already processed
-  if (processedWebhooks.has(webhookId)) {
+  // Check if already processed
+  const existing = await db.processedWebhook.findUnique({
+    where: { webhookId }
+  });
+
+  if (existing) {
     return { status: 'already_processed' };
   }
 
-  processedWebhooks.add(webhookId);
-  // Process webhook...
+  // Process and mark as done
+  await processWebhook(webhook);
+  await db.processedWebhook.create({ data: { webhookId } });
 }
 ```
 
@@ -162,12 +154,6 @@ topics = ["products/update"]
 uri = "/webhooks/products"
 include_fields = ["id", "updated_at"]
 ```
-
-### Scalability
-
-- Use EventBridge or Pub/Sub for high volume
-- Handle downtime recovery with reconciliation jobs
-- Track timestamps for delay handling
 
 ## Built for Shopify Requirements
 
@@ -188,7 +174,7 @@ include_fields = ["id", "updated_at"]
 | Lighthouse score | ≤10 point reduction |
 | Admin Web Vitals | Meet all targets |
 
-## Common Pitfalls to Avoid
+## Common Pitfalls
 
 ### Performance Issues
 
@@ -206,8 +192,8 @@ include_fields = ["id", "updated_at"]
 
 ### Functionality Issues
 
-- ❌ Manual integrations (use extensions instead)
-- ❌ External dependencies (embed workflows)
+- ❌ Manual integrations (use extensions)
+- ❌ External dependencies
 - ❌ Poor onboarding
 - ❌ Missing error handling
 
@@ -218,64 +204,16 @@ include_fields = ["id", "updated_at"]
 - ❌ Data leakage in UI
 - ❌ Weak authentication
 
-## Code Quality
-
-### TypeScript Best Practices
-
-```typescript
-// ✅ GOOD - Use type inference
-const products = await getProducts();
-
-// ✅ GOOD - Explicit types for complex objects
-interface Product {
-  id: string;
-  title: string;
-  variants: Variant[];
-}
-
-// ❌ BAD - Any type
-const data: any = await fetchData();
-```
-
-### Error Handling
-
-```typescript
-// ✅ GOOD - Specific error handling
-try {
-  const result = await apiCall();
-} catch (error) {
-  if (error instanceof NetworkError) {
-    // Handle network error
-  } else if (error instanceof AuthError) {
-    // Handle auth error
-  }
-}
-
-// ❌ BAD - Generic error handling
-try {
-  await apiCall();
-} catch (error) {
-  console.log(error);  // Too generic
-}
-```
-
 ## Development Workflow
 
 ```bash
-# Type checking
-npm run typecheck
-
-# Linting
-npm run lint
-
-# Build
-npm run build
-
-# Test locally
-npm run dev
-
-# Deploy
-npm run deploy
+npm run dev          # Start dev server
+npm run typecheck    # Type checking
+npm run lint         # Linting
+npm run build        # Build
+npm run deploy       # Deploy
 ```
 
-See [code_patterns.md](code_patterns.md) for implementation examples.
+**See also:**
+- [code_patterns.md](code_patterns.md) - Implementation patterns
+- [configuration.md](configuration.md) - Configuration options
