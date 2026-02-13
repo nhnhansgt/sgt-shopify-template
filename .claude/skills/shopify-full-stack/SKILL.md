@@ -73,6 +73,85 @@ When editing `shopify.extension.toml`:
 3. Compare with template structure
 4. Validate with `shopify extension validate`
 
+## Liquid Validation Workflow (CRITICAL)
+
+**MANDATORY** for ALL `.liquid` file creation/modification:
+
+### Validation Loop
+
+```
+Create/Edit .liquid → Validate → Fix Errors → Re-validate → Done
+```
+
+### Step-by-Step Validation
+
+**Step 1: After creating/editing ANY .liquid file**
+
+```bash
+# Get conversationId first (do this once per session)
+mcp__shopify-dev-mcp__learn_shopify_api(api: "liquid")
+```
+
+**Step 2: Validate Liquid syntax with MCP**
+
+Use `mcp__shopify-dev-mcp__validate_theme` tool:
+
+```
+Parameters:
+- conversationId: from learn_shopify_api
+- absoluteThemePath: "/path/to/extension/directory"
+- filesCreatedOrUpdated: [
+    { "path": "blocks/my-block.liquid" },
+    { "path": "snippets/my-snippet.liquid" }
+  ]
+```
+
+**Step 3: Fix all validation errors**
+
+Common errors and fixes:
+- Missing closing tag → Add `{% endif %}`, `{% endfor %}`, etc.
+- Invalid JSON in schema → Fix commas, quotes, brackets
+- Wrong filter syntax → Check `{{ }}` vs `{% %}`
+- Invalid tag → Check against allowed tags list
+
+**Step 4: Re-validate until clean**
+
+```bash
+# Only run shopify app dev AFTER validation passes
+shopify app dev
+```
+
+### Quick Validation Checklist
+
+Before marking task complete, verify:
+
+- [ ] All `{% if %}` have `{% endif %}`
+- [ ] All `{% for %}` have `{% endfor %}`
+- [ ] All `{% schema %}` have valid JSON
+- [ ] All `{% stylesheet %}` have valid CSS
+- [ ] All `{% javascript %}` have valid JS
+- [ ] No `{% content_for_header %}` in app blocks
+- [ ] MCP validation passes with no errors
+- [ ] `shopify app dev` starts without Liquid errors
+
+### When to Use Which Validation Tool
+
+| Scenario | Tool |
+|----------|------|
+| Working in actual extension directory | `validate_theme` |
+| Creating code blocks without directory | `validate_theme_codeblocks` |
+| Validating GraphQL in Liquid | `validate_graphql_codeblocks` |
+
+### Common Liquid Syntax Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Unexpected end of file` | Missing `{% endif %}` or `{% endfor %}` | Add closing tag |
+| `Invalid JSON` in schema | Missing comma, quote, or bracket | Fix JSON syntax |
+| `Unknown tag` | Using forbidden tag like `content_for_header` | Remove or replace |
+| `Filter not found` | Typo in filter name | Check filter spelling |
+| `Undefined variable` | Variable not assigned or out of scope | Check variable scope |
+
 ## Common Tasks
 
 ### Creating a New App Block
