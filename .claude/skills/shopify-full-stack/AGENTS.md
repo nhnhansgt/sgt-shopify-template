@@ -20,7 +20,6 @@ When creating a Theme App Extension, **always instruct Cook agent** to:
 1. Copy template: `cp -r .claude/skills/shopify-full-stack/templates/theme-extension extensions/<name>`
 2. Modify copied files - **never create from scratch**
 3. Validate Liquid with MCP `validate_theme`
-4. Run `shopify extension check` before `shopify app dev`
 
 ## Multi-Agent Sequence (Complex Tasks)
 
