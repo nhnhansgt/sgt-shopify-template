@@ -13,16 +13,28 @@ This document describes the specialized agents available for Shopify full-stack 
 - Building UI components with Polaris
 - Creating app routes and handlers
 - Adding functionality step-by-step
+- **Creating Theme App Extensions** (use template workflow)
+
+**Theme App Extension Workflow** (CRITICAL):
+1. **ALWAYS copy template first**:
+   ```bash
+   cp -r .claude/skills/shopify-full-stack/templates/theme-extension extensions/my-new-extension
+   ```
+2. Modify copied files - never create from scratch
+3. Call `mcp__shopify-dev-mcp__search_docs_chunks` for TOML syntax validation
+4. Validate with `shopify extension validate` before `shopify app dev`
 
 **Do NOT use for**:
 - Research-only tasks (use Explore agent)
 - Simple file edits (use Edit tool directly)
 - Queries about documentation (use docs-seeker or context7)
+- Creating new extension files from scratch (use template!)
 
 **Example triggers**:
 - "Implement product review system"
 - "Add settings page to app"
 - "Create webhook handler for orders"
+- "Create theme app extension for [feature]"
 
 ### 2. Explore Agent
 
