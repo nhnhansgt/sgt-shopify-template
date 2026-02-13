@@ -2,6 +2,26 @@
 
 Best practices and rules for building valid Theme App Extensions.
 
+## CRITICAL: Configuration File Syntax
+
+**MANDATORY** for ALL `.toml` configuration files:
+
+1. **ALWAYS** call `mcp__shopify-dev-mcp__search_docs_chunks` BEFORE writing config:
+   - Use conversationId from `mcp__shopify-dev-mcp__learn_shopify_api`
+   - Prompt: `"toml configuration api_version type targeting settings"`
+   - Retrieve current valid syntax from official docs
+
+2. **NEVER** write TOML from memory - syntax changes with Shopify CLI versions
+
+3. **ALWAYS** validate after creation:
+   ```bash
+   shopify extension validate
+   # or
+   shopify extension push --dry-run
+   ```
+
+4. **Use `fetch_full_docs`** for complete TOML reference when needed
+
 ## File Rules
 
 ### TOML Configuration (shopify.extension.toml)
@@ -34,6 +54,22 @@ type = "ui_extension"
 # WRONG - Theme extensions don't use targeting/target attributes
 [[extensions.targeting]]
 target = "purchase.checkout.block.render"
+```
+
+### TOML Syntax Validation (CRITICAL)
+
+**MANDATORY** - When writing or modifying `.toml` configuration files:
+
+**ALWAYS** call `mcp__shopify-dev-mcp__search_docs_chunks` first to retrieve current TOML syntax:
+```
+Use prompt: "theme app extension toml configuration api_version type targeting"
+```
+
+**DO NOT** write TOML from memory - syntax changes between Shopify CLI versions.
+
+**ALWAYS** validate TOML syntax after creation using:
+```bash
+shopify extension validate
 ```
 
 ### TOML Property Comparison
