@@ -18,27 +18,16 @@ Build Shopify apps and extensions using React Router v7 template.
 
 ## Skill Files
 
-| File | Purpose |
-|------|---------|
+| File                                                                   | Purpose                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [references/theme-app-extension.md](references/theme-app-extension.md) | Theme extension structure, schema, settings, assets, locales |
-| [rules/theme-app-extension.md](rules/theme-app-extension.md) | Validation rules, DO/DON'T checklist, common errors |
-| [templates/theme-extension/](templates/theme-extension/) | Working template - always copy, never create from scratch |
-
-## Theme Extension Quick Start
-
-```bash
-# 1. Copy template
-cp -r .claude/skills/shopify-full-stack/templates/theme-extension extensions/<name>
-
-# 2. Edit TOML name, modify blocks/locales/assets
-
-# 3. Validate
-shopify extension check
-```
+| [rules/theme-app-extension.md](rules/theme-app-extension.md)           | Validation rules, DO/DON'T checklist, common errors          |
+| [templates/theme-extension/](templates/theme-extension/)               | Working template - always copy, never create from scratch    |
 
 ## MCP Tools
 
 Use `shopify-dev-mcp` for:
+
 - `learn_shopify_api` - Load API context (call first, get conversationId)
 - `search_docs_chunks` - Search Shopify documentation
 - `validate_theme` - Validate Liquid syntax (MANDATORY for .liquid files)
@@ -47,8 +36,8 @@ Use `shopify-dev-mcp` for:
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
+| Problem                         | Solution                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
 | Invalid extension configuration | Check TOML matches template, call MCP for current syntax, run `shopify extension check` |
-| Extension not in theme editor | Verify `target` in schema, `type = "theme"` in TOML, restart `shopify app dev` |
-| Liquid syntax errors | Run MCP `validate_theme`, check closing tags, verify JSON in schema |
+| Extension not in theme editor   | Verify `target` in schema, `type = "theme"` in TOML, restart `shopify app dev`          |
+| Liquid syntax errors            | Run MCP `validate_theme`, check closing tags, verify JSON in schema                     |

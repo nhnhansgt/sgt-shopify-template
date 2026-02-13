@@ -22,12 +22,11 @@ target = "purchase.checkout.block.render"
 
 ## Liquid Validation (MANDATORY)
 
-Every `.liquid` file must be validated via MCP before running `shopify app dev`:
+Every `.liquid` file must be validated via MCP:
 
 1. Call `learn_shopify_api(api: "liquid")` to get conversationId
 2. Call `validate_theme` with the extension path and changed files
 3. Fix all errors, re-validate until clean
-4. Only then run `shopify app dev`
 
 ### Allowed Tags
 
@@ -46,10 +45,10 @@ Every `.liquid` file must be validated via MCP before running `shopify app dev`:
 
 ## Schema Rules
 
-| Rule | Limit |
-|------|-------|
-| Block `name` | Max 25 chars |
-| Setting `label` | Max 50 chars |
+| Rule             | Limit        |
+| ---------------- | ------------ |
+| Block `name`     | Max 25 chars |
+| Setting `label`  | Max 50 chars |
 | Translation keys | Max 50 chars |
 
 - Don't include app name in block `name` - it appears automatically
@@ -57,6 +56,53 @@ Every `.liquid` file must be validated via MCP before running `shopify app dev`:
 - Use only ONE of `enabled_on` or `disabled_on`, never both
 - Don't enable on checkout templates (not supported)
 - Don't use complex expressions in `available_if` - only simple metafield references
+
+### Range Settings Rules
+
+For `type: "range"` settings, TWO conditions must be satisfied:
+
+1. **Step must evenly divide the range**: `(max - min) % step === 0`
+2. **Total steps ≤ 101**: `(max - min) / step ≤ 101`
+
+```json
+// VALID: (100 - 0) / 1 = 100 steps ✓
+{
+  "type": "range",
+  "id": "opacity",
+  "min": 0,
+  "max": 100,
+  "step": 1
+}
+
+// VALID: (10 - 0) / 0.1 = 100 steps ✓
+{
+  "type": "range",
+  "id": "z_index",
+  "min": 0,
+  "max": 10,
+  "step": 0.1
+}
+
+// INVALID: (100 - 0) / 3 = 33.33... not divisible ✗
+{
+  "type": "range",
+  "id": "z_index",
+  "min": 0,
+  "max": 100,
+  "step": 3  // Error: step must evenly divide the range
+}
+
+// INVALID: (1000 - 0) / 1 = 1000 steps > 101 ✗
+{
+  "type": "range",
+  "id": "z_index",
+  "min": 0,
+  "max": 1000,
+  "step": 1  // Error: Range settings must have at most 101 steps
+}
+```
+
+**Formula to verify**: `step = (max - min) / N` where N ≤ 101
 
 ## Snippet Rules
 
@@ -67,6 +113,7 @@ Every `.liquid` file must be validated via MCP before running `shopify app dev`:
 ## Locale Rules
 
 - `en.default.json` is required as fallback
+- File name must be extension name + ".json"
 - Use hierarchical keys: `{ "feature": { "title": "...", "settings": {...} } }`
 - Don't use flat/cryptic keys like `"t1"`, `"sr"`
 - Always use `{{ 'key' | t }}` for user-facing text, never hardcode
@@ -92,6 +139,7 @@ Every `.liquid` file must be validated via MCP before running `shopify app dev`:
 - [ ] Schema JSON is valid (no trailing commas, proper quotes)
 - [ ] Block `name` < 25 chars, `label` < 50 chars
 - [ ] No forbidden Liquid tags
+- [ ] Range settings: `(max - min) % step === 0` AND `(max - min) / step ≤ 101`
 - [ ] MCP `validate_theme` passes clean
 - [ ] `shopify extension check` passes
 - [ ] Tested in theme editor preview
@@ -99,14 +147,16 @@ Every `.liquid` file must be validated via MCP before running `shopify app dev`:
 
 ## Common Errors
 
-| Error | Fix |
-|-------|-----|
-| `Unexpected end of file` | Add missing `{% endif %}` or `{% endfor %}` |
-| `Invalid JSON` in schema | Fix commas, quotes, brackets |
-| `Label too long` | Shorten name/label/keys to limits |
-| `Unknown tag` | Remove forbidden tags |
-| `Filter not found` | Check filter spelling |
-| `AssetSizeAppBlockCSS` | Reduce CSS size |
-| `AssetSizeAppBlockJavaScript` | Reduce JS or use lazy loading |
-| `AppBlockValidTags` | Remove forbidden Liquid tags |
-| `ImgWidthAndHeight` | Add `width`/`height` to `<img>` tags |
+| Error                                         | Fix                                                      |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `Unexpected end of file`                      | Add missing `{% endif %}` or `{% endfor %}`              |
+| `Invalid JSON` in schema                      | Fix commas, quotes, brackets                             |
+| `Label too long`                              | Shorten name/label/keys to limits                        |
+| `Unknown tag`                                 | Remove forbidden tags                                    |
+| `Filter not found`                            | Check filter spelling                                    |
+| `AssetSizeAppBlockCSS`                        | Reduce CSS size                                          |
+| `AssetSizeAppBlockJavaScript`                 | Reduce JS or use lazy loading                            |
+| `AppBlockValidTags`                           | Remove forbidden Liquid tags                             |
+| `ImgWidthAndHeight`                           | Add `width`/`height` to `<img>` tags                     |
+| `step must evenly divide the range`           | Set step so `(max - min) % step === 0`                   |
+| `Range settings must have at most 101 steps`  | Reduce range or increase step: `(max - min) / step ≤ 101` |

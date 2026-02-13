@@ -2,6 +2,13 @@
 
 Theme App Extensions let merchants add dynamic elements to themes without editing theme code. Apps deploy once to all stores, with automatic CDN hosting and theme editor integration.
 
+## Theme Extension Quick Start
+
+```bash
+# 1. Copy `theme-extention` in templates folder to `extensions` folder. Ex: cp -r templates/theme-extention extensions/<name>
+# 2. Edit TOML name, modify blocks/locales/assets
+```
+
 ## Directory Structure
 
 ```
@@ -47,34 +54,34 @@ Inline content added by merchants to theme sections.
 
 Injected before closing tags. For floating/overlay elements.
 
-| Target | Injected | Use for |
-|--------|----------|---------|
-| `head` | Before `</head>` | Scripts, styles, meta tags |
-| `body` | Before `</body>` | Floating UI, overlays, chat |
-| `compliance_head` | First in `<head>` | Cookie consent (critical) |
+| Target            | Injected          | Use for                     |
+| ----------------- | ----------------- | --------------------------- |
+| `head`            | Before `</head>`  | Scripts, styles, meta tags  |
+| `body`            | Before `</body>`  | Floating UI, overlays, chat |
+| `compliance_head` | First in `<head>` | Cookie consent (critical)   |
 
 ## Schema Attributes
 
 ### Required
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `name` | string | Title in theme editor (max 25 chars) |
-| `target` | string | `section`, `head`, `body`, `compliance_head` |
+| Attribute | Type   | Description                                  |
+| --------- | ------ | -------------------------------------------- |
+| `name`    | string | Title in theme editor (max 25 chars)         |
+| `target`  | string | `section`, `head`, `body`, `compliance_head` |
 
 ### Optional
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `javascript` | string | JS file from assets/ (auto-loaded in `<head>`) |
-| `stylesheet` | string | CSS file from assets/ (auto-loaded in `<head>`) |
-| `enabled_on` | object | Limit to specific templates/section groups |
-| `disabled_on` | object | Prevent on specific templates |
-| `class` | string | Extra CSS classes (always includes `shopify-block`) |
-| `tag` | string | Wrapping HTML tag (default: `div`) |
-| `settings` | array | Merchant-configurable settings |
-| `default` | object | Default setting configuration |
-| `available_if` | string | Conditional visibility via app metafield |
+| Attribute      | Type   | Description                                         |
+| -------------- | ------ | --------------------------------------------------- |
+| `javascript`   | string | JS file from assets/ (auto-loaded in `<head>`)      |
+| `stylesheet`   | string | CSS file from assets/ (auto-loaded in `<head>`)     |
+| `enabled_on`   | object | Limit to specific templates/section groups          |
+| `disabled_on`  | object | Prevent on specific templates                       |
+| `class`        | string | Extra CSS classes (always includes `shopify-block`) |
+| `tag`          | string | Wrapping HTML tag (default: `div`)                  |
+| `settings`     | array  | Merchant-configurable settings                      |
+| `default`      | object | Default setting configuration                       |
+| `available_if` | string | Conditional visibility via app metafield            |
 
 ### Example with All Features
 
@@ -100,37 +107,37 @@ Injected before closing tags. For floating/overlay elements.
 
 ### Basic Inputs
 
-| Type | Description | Example Value |
-|------|-------------|---------------|
-| `checkbox` | Boolean toggle | `true` |
-| `number` | Numeric input | `20` |
-| `radio` | Single selection | `"option_a"` |
-| `range` | Slider (min/max) | `50` |
-| `select` | Dropdown | `"option_a"` |
-| `text` | Single line | `"Hello"` |
-| `textarea` | Multi-line | `"Line 1\nLine 2"` |
+| Type       | Description      | Example Value      |
+| ---------- | ---------------- | ------------------ |
+| `checkbox` | Boolean toggle   | `true`             |
+| `number`   | Numeric input    | `20`               |
+| `radio`    | Single selection | `"option_a"`       |
+| `range`    | Slider (min/max) | `50`               |
+| `select`   | Dropdown         | `"option_a"`       |
+| `text`     | Single line      | `"Hello"`          |
+| `textarea` | Multi-line       | `"Line 1\nLine 2"` |
 
 ### Resource Selectors
 
-| Type | Description |
-|------|-------------|
-| `article` | Blog article |
-| `blog` | Blog |
+| Type                             | Description                   |
+| -------------------------------- | ----------------------------- |
+| `article`                        | Blog article                  |
+| `blog`                           | Blog                          |
 | `collection` / `collection_list` | Single / multiple collections |
-| `product` / `product_list` | Single / multiple products |
-| `image_picker` | Image |
-| `video` / `video_url` | Video / YouTube/Vimeo URL |
-| `url` | URL input |
+| `product` / `product_list`       | Single / multiple products    |
+| `image_picker`                   | Image                         |
+| `video` / `video_url`            | Video / YouTube/Vimeo URL     |
+| `url`                            | URL input                     |
 
 ### Specialized
 
-| Type | Description |
-|------|-------------|
+| Type                     | Description                       |
+| ------------------------ | --------------------------------- |
 | `color` / `color_scheme` | Color picker / theme color scheme |
-| `font_picker` | Font selector |
-| `html` | HTML editor |
-| `richtext` | Rich text editor |
-| `text_alignment` | Left/center/right |
+| `font_picker`            | Font selector                     |
+| `html`                   | HTML editor                       |
+| `richtext`               | Rich text editor                  |
+| `text_alignment`         | Left/center/right                 |
 
 ### Setting Properties Example
 
@@ -169,12 +176,12 @@ Metafield must be boolean type in `app` ownership namespace.
 
 ### File Types
 
-| File Pattern | Purpose |
-|-------------|---------|
-| `en.default.json` | Customer-facing translations (required) |
+| File Pattern             | Purpose                                     |
+| ------------------------ | ------------------------------------------- |
+| `en.default.json`        | Customer-facing translations (required)     |
 | `en.default.schema.json` | Theme editor translations (merchant-facing) |
-| `<lang>.json` | Other language translations |
-| `<lang>.schema.json` | Other language schema translations |
+| `<lang>.json`            | Other language translations                 |
+| `<lang>.schema.json`     | Other language schema translations          |
 
 ### Usage in Liquid
 
@@ -187,11 +194,13 @@ Metafield must be boolean type in `app` ownership namespace.
 ### Loading Methods
 
 **Schema attributes** (auto-loaded):
+
 ```json
 { "stylesheet": "styles.css", "javascript": "app.js" }
 ```
 
 **Liquid filters** (manual):
+
 ```liquid
 <link rel="stylesheet" href="{{ 'styles.css' | asset_url }}">
 <script src="{{ 'script.js' | asset_url }}" defer></script>
@@ -204,15 +213,15 @@ Metafield must be boolean type in `app` ownership namespace.
 
 ## Limits
 
-| Content | Limit |
-|---------|-------|
-| All files in extension | 10 MB |
-| Number of blocks | 30 |
-| Locale files | 100 |
-| Each locale file | 15 KB |
-| Liquid across all files | 100 KB |
+| Content                     | Limit  |
+| --------------------------- | ------ |
+| All files in extension      | 10 MB  |
+| Number of blocks            | 30     |
+| Locale files                | 100    |
+| Each locale file            | 15 KB  |
+| Liquid across all files     | 100 KB |
 | CSS (compressed, suggested) | 100 KB |
-| JS (compressed, suggested) | 10 KB |
+| JS (compressed, suggested)  | 10 KB  |
 
 ## Deep Linking
 
