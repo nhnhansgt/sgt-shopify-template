@@ -11,6 +11,24 @@ This is a **Shopify App Template** built with **React Router v7** (formerly Remi
 - **Database**: Prisma ORM with SQLite (configurable for other databases)
 - **API**: Shopify Admin GraphQL API
 - **Authentication**: Shopify App Bridge with OAuth flow
+- **Testing**: No test framework configured
+
+## Claude Code Skills
+
+This project includes Claude Code skills for enhanced development:
+
+- **shopify-full-stack** (`/.claude/skills/shopify-full-stack/SKILL.md`): Build Shopify apps and extensions with React Router v7, Polaris, Prisma. Use when creating routes, extensions, fixing TOML errors, or running `shopify app dev`.
+- **react-best-practices** (`/.claude/skills/react-best-practices/SKILL.md`): React/Next.js performance optimization guidelines from Vercel Engineering.
+
+### Shopify Dev MCP
+
+This project is configured with **Shopify Dev MCP** for enhanced API development:
+
+- `learn_shopify_api` - Load API context (call first, get conversationId)
+- `search_docs_chunks` - Search Shopify documentation
+- `validate_theme` - Validate Liquid syntax (MANDATORY for .liquid files)
+- `validate_graphql_codeblocks` - Validate GraphQL queries
+- `introspect_graphql_schema` - Explore GraphQL schema
 
 ## Development Commands
 
